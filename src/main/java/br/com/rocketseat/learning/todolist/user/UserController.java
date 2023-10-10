@@ -2,7 +2,6 @@ package br.com.rocketseat.learning.todolist.user;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -17,7 +16,7 @@ public class UserController {
     private IUserRepository userRepository;
 
     @PostMapping("/")
-    public ResponseEntity create(@RequestBody UserModel user){
+    public ResponseEntity<Object> create(@RequestBody UserModel user){
         var userExistent = userRepository.findByUserName(user.getUserName());
         
         if(userExistent != null){
