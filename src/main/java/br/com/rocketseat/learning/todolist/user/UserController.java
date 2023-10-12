@@ -22,9 +22,7 @@ public class UserController {
         var userExistent = userRepository.findByUserName(user.getUserName());
         
         if(userExistent != null){
-            return ResponseEntity
-                        .status(HttpStatus.BAD_REQUEST)
-                        .body("Usuário já existe.");
+            return buildReturn("Usuário já existe.", HttpStatus.BAD_REQUEST);
         }
 
         var passwordHasred = BCrypt
@@ -34,8 +32,13 @@ public class UserController {
         user.setPassword(passwordHasred);
 
         var userCreated = this.userRepository.save(user);
+
+        return buildReturn(userCreated, HttpStatus.CREATED);
+    }
+
+    private ResponseEntity buildReturn(Object object, HttpStatus httpStatusCode){
         return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(userCreated);
+                .status(httpStatusCode)
+                .body(object);
     }
 }

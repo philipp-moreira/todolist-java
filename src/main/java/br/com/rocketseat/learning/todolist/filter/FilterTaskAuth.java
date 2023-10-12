@@ -24,6 +24,12 @@ public class FilterTaskAuth extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
+        
+        if(!request.getServletPath().startsWith("/task/")){
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         /*
          * Pegar autenticação (Usuario e Senha)
          */
@@ -42,6 +48,7 @@ public class FilterTaskAuth extends OncePerRequestFilter {
                                     .verifyer()
                                     .verify(password.toCharArray(), user.getPassword());
             if(passwordVerify.verified){
+                request.setAttribute("idUser", user.getId());
                 // Segue viagem
                 filterChain.doFilter(request, response);
 
