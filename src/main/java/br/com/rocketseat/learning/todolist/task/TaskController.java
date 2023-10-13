@@ -25,9 +25,9 @@ public class TaskController {
     private ITaskRepository taskRepository;
 
     @GetMapping("/")
-    public ResponseEntity get(HttpServletRequest request){
+    public ResponseEntity get(HttpServletRequest request) {
         var idUser = request.getAttribute("idUser");
-        var idUserConverted = (UUID)idUser;
+        var idUserConverted = (UUID) idUser;
         var tasks = taskRepository.findByIdUser(idUserConverted);
 
         return buildReturn(tasks, HttpStatus.OK);
@@ -37,12 +37,12 @@ public class TaskController {
     public ResponseEntity create(@RequestBody TaskModel task, HttpServletRequest request) {
 
         var dateIsValid = datesOfTaskIsValid(task);
-        if(dateIsValid.length() > 0){
+        if (dateIsValid.length() > 0) {
             return buildReturn(dateIsValid, HttpStatus.BAD_REQUEST);
         }
 
         var idUser = request.getAttribute("idUser");
-        task.setId((UUID)idUser);
+        task.setId((UUID) idUser);
 
         var taskRegistered = taskRepository.save(task);
 
@@ -57,8 +57,17 @@ public class TaskController {
             return buildReturn(dateIsValid, HttpStatus.BAD_REQUEST);
         }
 
+        var taskExistent = taskRepository.findById(idTask).orElse(null);
+        if(taskExistent == null){
+            return buildReturn("Tarefa não localizada.", HttpStatus.BAD_REQUEST);
+        }
+
         var idUser = request.getAttribute("idUser");
         var idUserConverted = (UUID)idUser;
+
+        if(!taskExistent.getIdUser().equals(idUserConverted)){
+            return buildReturn("Usuário não tem permissão para alterar esta tarefa.", HttpStatus.BAD_REQUEST);
+        }
         
         task.setIdUser(idUserConverted);
         task.setId(idTask);
@@ -69,10 +78,10 @@ public class TaskController {
     }
 
     @PatchMapping("/{idTask}")
-    public ResponseEntity pacth(@RequestBody TaskModel task, @PathVariable UUID idTask){
+    public ResponseEntity pacth(@RequestBody TaskModel task, @PathVariable UUID idTask) {
 
         var taskExistent = taskRepository.findById(idTask).orElse(null);
-        if (taskExistent == null){
+        if (taskExistent == null) {
             return buildReturn("Task informada não localizada.", HttpStatus.BAD_REQUEST);
         }
 
@@ -83,21 +92,21 @@ public class TaskController {
         return buildReturn(taskUpdated, HttpStatus.OK);
     }
 
-    private ResponseEntity buildReturn(Object object, HttpStatus httpStatusCode){
+    private ResponseEntity buildReturn(Object object, HttpStatus httpStatusCode) {
         return ResponseEntity
                 .status(httpStatusCode)
                 .body(object);
     }
 
-    private String datesOfTaskIsValid(TaskModel task){
+    private String datesOfTaskIsValid(TaskModel task) {
         String response = "";
         var currentDateTime = LocalDateTime.now();
-        
-        if(currentDateTime.isAfter(task.getStartAt()) || currentDateTime.isAfter(task.getEndAt())){
+
+        if (currentDateTime.isAfter(task.getStartAt()) || currentDateTime.isAfter(task.getEndAt())) {
             response = "A data de ínicio/término deve ser maior que a data atual.";
         }
 
-        if(task.getStartAt().isAfter(task.getEndAt())){
+        if (task.getStartAt().isAfter(task.getEndAt())) {
             response += "A data de ínicio deve ser menor que a data de término.";
         }
 
